@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speed-Check: ВСЕГДА vs. НАВСЕГДА</title>
+    <!-- Polyfill für Touch-Geräte -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --success: #27ae60;
+            --error: #e74c3c;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --text: #2f3640;
+        }
+
+        /* Deaktiviert Kursivschrift global */
+        * {
+            font-style: normal !important;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            margin-top: 20px;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--primary);
+            border-bottom: 3px solid var(--accent);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .instruction {
+            background-color: #e8f4fd;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        /* Game Area */
+        .game-box {
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #eee;
+            border-radius: 15px;
+            padding: 20px;
+            position: relative;
+            background-color: #fafbfc;
+        }
+
+        .sentence-display {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 30px;
+            min-height: 3rem;
+        }
+
+        /* Timer Bar */
+        .timer-container {
+            width: 100%;
+            height: 8px;
+            background-color: #eee;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        #timer-bar {
+            width: 100%;
+            height: 100%;
+            background-color: var(--accent);
+            transition: width linear;
+        }
+
+        /* Game Buttons */
+        .action-group {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .game-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+            color: white;
+        }
+
+        .btn-true { background-color: var(--success); }
+        .btn-false { background-color: var(--error); }
+        .game-btn:active { transform: scale(0.95); }
+        .game-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+        /* Stats */
+        .stats {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-around;
+            font-weight: bold;
+        }
+
+        /* Result View */
+        #result-screen {
+            display: none;
+        }
+
+        .solution-list {
+            text-align: left;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .sol-item { margin-bottom: 8px; padding: 5px; border-bottom: 1px solid #f0f0f0; }
+        .sol-correct { color: var(--success); }
+        .sol-wrong { color: var(--error); }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .control-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            background-color: var(--primary);
+            color: white;
+        }
+
+        @media (max-width: 500px) {
+            .sentence-display { font-size: 1.1rem; }
+            .game-btn { padding: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Speed-Check</h1>
+
+    <!-- Start Screen & Instructions -->
+    <div id="start-screen">
+        <div class="instruction">
+            Entscheide schnell: Wird <strong>всегда</strong> oder <strong>навсегда</strong> korrekt verwendet? <br>
+            Du hast 7 Sekunden pro Satz!
+        </div>
+        <button class="control-btn" onclick="startGame()">Spiel starten</button>
+    </div>
+
+    <!-- Main Game Area -->
+    <div id="game-area" style="display: none;">
+        <div class="timer-container">
+            <div id="timer-bar"></div>
+        </div>
+        
+        <div class="game-box">
+            <div id="feedback-icon" style="font-size: 2rem; margin-bottom: 10px;"></div>
+            <div class="sentence-display" id="sentence-text"></div>
+            
+            <div class="action-group">
+                <button class="game-btn btn-true" id="btn-true" onclick="handleAnswer(true)">Richtig</button>
+                <button class="game-btn btn-false" id="btn-false" onclick="handleAnswer(false)">Falsch</button>
+            </div>
+        </div>
+
+        <div class="stats">
+            <span>Satz: <span id="current-index">1</span> / 15</span>
+            <span>Punkte: <span id="score">0</span></span>
+        </div>
+    </div>
+
+    <!-- Result Screen -->
+    <div id="result-screen">
+        <h2>Ergebnis: <span id="final-score">0</span> / 15</h2>
+        <div class="solution-list" id="solution-list"></div>
+        <div class="controls">
+            <button class="control-btn" onclick="startGame()">Mischen & Neustart</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const allSätze = [
+        { s: "Я всегда пью чай по утрам.", ok: true },
+        { s: "Я навсегда пью чай по утрам.", ok: false },
+        { s: "Мы решили расстаться навсегда.", ok: true },
+        { s: "Мы решили расстаться всегда.", ok: false },
+        { s: "Солнце всегда встаёт на востоке.", ok: true },
+        { s: "Солнце навсегда встаёт на востоке.", ok: false },
+        { s: "Юля всегда опаздывала в школу.", ok: true },
+        { s: "Я всегда запомню этот день.", ok: false }, // Falsch: запомню ist SV -> навсегда
+        { s: "Я навсегда запомню этот день.", ok: true },
+        { s: "Он навсегда уехал из города.", ok: true },
+        { s: "Он всегда уехал из города.", ok: false }, // Falsch: уехал ist SV -> навсегда
+        { s: "Ты всегда говоришь правду?", ok: true },
+        { s: "Коллеги навсегда помогают мне.", ok: false }, // Falsch: Gewohnheit -> всегда
+        { s: "Я навсегда бросил курить.", ok: true },
+        { s: "Раньше я всегда забывал это слово.", ok: true },
+        { s: "Я всегда полюбил эту музыку.", ok: false }, // Falsch: полюбил ist SV -> навсегда
+        { s: "Ты навсегда хочешь здесь работать?", ok: false }, // Eher: immer (всегда)
+        { s: "Эту тему мы закрыли навсегда.", ok: true },
+        { s: "Я всегда буду любить тебя.", ok: true },
+        { s: "Я навсегда буду любить тебя.", ok: true } // Beides möglich (Endgültigkeit vs. Dauer)
+    ];
+
+    let gameSätze = [];
+    let currentIndex = 0;
+    let score = 0;
+    let timer;
+    let timerDuration = 7000;
+    let resultsLog = [];
+
+    function shuffle(array) {
+        return array.sort(() => Math.random() - 0.5);
+    }
+
+    function startGame() {
+        gameSätze = shuffle([...allSätze]).slice(0, 15);
+        currentIndex = 0;
+        score = 0;
+        resultsLog = [];
+        
+        document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'none';
+        document.getElementById('game-area').style.display = 'block';
+        
+        updateStats();
+        nextSentence();
+    }
+
+    function nextSentence() {
+        if (currentIndex >= gameSätze.length) {
+            endGame();
+            return;
+        }
+
+        const current = gameSätze[currentIndex];
+        document.getElementById('sentence-text').innerText = current.s;
+        document.getElementById('feedback-icon').innerText = "";
+        document.getElementById('current-index').innerText = currentIndex + 1;
+        
+        enableButtons(true);
+        startTimer();
+    }
+
+    function startTimer() {
+        const bar = document.getElementById('timer-bar');
+        bar.style.transition = 'none';
+        bar.style.width = '100%';
+        
+        setTimeout(() => {
+            bar.style.transition = `width ${timerDuration}ms linear`;
+            bar.style.width = '0%';
+        }, 10);
+
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+            handleAnswer(null); // Zeit abgelaufen
+        }, timerDuration);
+    }
+
+    function handleAnswer(userAnswer) {
+        clearTimeout(timer);
+        enableButtons(false);
+        
+        const current = gameSätze[currentIndex];
+        const isCorrect = (userAnswer === current.ok);
+        
+        if (isCorrect && userAnswer !== null) {
+            score++;
+            document.getElementById('feedback-icon').innerText = "✅";
+            resultsLog.push({ s: current.s, res: "Richtig", class: "sol-correct" });
+        } else {
+            document.getElementById('feedback-icon').innerText = "❌";
+            const reason = userAnswer === null ? "Zeit abgelaufen" : "Falsch";
+            resultsLog.push({ s: current.s, res: reason, class: "sol-wrong" });
+        }
+
+        updateStats();
+        
+        setTimeout(() => {
+            currentIndex++;
+            nextSentence();
+        }, 1000);
+    }
+
+    function updateStats() {
+        document.getElementById('score').innerText = score;
+    }
+
+    function enableButtons(status) {
+        document.getElementById('btn-true').disabled = !status;
+        document.getElementById('btn-false').disabled = !status;
+    }
+
+    function endGame() {
+        document.getElementById('game-area').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'block';
+        document.getElementById('final-score').innerText = score;
+        
+        const list = document.getElementById('solution-list');
+        list.innerHTML = "";
+        resultsLog.forEach(item => {
+            const div = document.createElement('div');
+            div.className = `sol-item ${item.class}`;
+            div.innerText = `${item.s} — ${item.res}`;
+            list.appendChild(div);
+        });
+    }
+</script>
+
+</body>
+</html>
