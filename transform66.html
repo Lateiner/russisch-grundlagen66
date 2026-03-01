@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transformation: ВСЕГДА vs. НАВСЕГДА</title>
+    <!-- Polyfill für Touch-Geräte -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --success: #27ae60;
+            --error: #e74c3c;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --border: #d1d8e0;
+            --highlight: #fff3cd;
+        }
+
+        /* Deaktiviert Kursivschrift global */
+        * {
+            font-style: normal !important;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--primary);
+            line-height: 1.6;
+            margin: 0;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 20px auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            border-bottom: 3px solid var(--accent);
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+        }
+
+        .instruction {
+            background-color: #e8f4fd;
+            padding: 15px;
+            border-left: 5px solid var(--accent);
+            border-radius: 5px;
+            margin-bottom: 30px;
+        }
+
+        .exercise-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .transformation-card {
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            background-color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        .original-sentence {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .highlight-phrase {
+            background-color: var(--highlight);
+            padding: 2px 5px;
+            border-bottom: 2px solid #f1c40f;
+            font-weight: bold;
+        }
+
+        .transformed-sentence {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--success);
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f0fff4;
+            border-radius: 8px;
+            display: none; /* Erst nach Lösung anzeigen */
+        }
+
+        .option-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .choice-btn {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid var(--border);
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .choice-btn:hover {
+            border-color: var(--accent);
+        }
+
+        /* Feedback Status */
+        .choice-btn.correct {
+            background-color: var(--success) !important;
+            border-color: var(--success) !important;
+            color: white !important;
+        }
+
+        .choice-btn.incorrect {
+            background-color: var(--error) !important;
+            border-color: var(--error) !important;
+            color: white !important;
+        }
+
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding-top: 20px;
+            border-top: 2px solid var(--border);
+        }
+
+        .action-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: opacity 0.2s;
+        }
+
+        .btn-reset { background-color: #718096; color: white; }
+        .btn-sol { background-color: var(--accent); color: white; }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .option-group { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Transformations-Aufgabe</h1>
+
+    <div class="instruction">
+        <strong>Anleitung:</strong> Formuliere den Satz um. Ersetze den markierten Ausdruck durch das passende Wort: <strong>всегда</strong> (Wiederholung) oder <strong>навсегда</strong> (Endgültigkeit).
+    </div>
+
+    <div id="task-container" class="exercise-list">
+        <!-- Inhalte werden per JS geladen -->
+    </div>
+
+    <div class="controls">
+        <button class="action-btn btn-reset" onclick="initGame()">Zurücksetzen & Mischen</button>
+        <button class="action-btn btn-sol" onclick="revealAll()">Lösungen anzeigen</button>
+    </div>
+</div>
+
+<script>
+    const tasks = [
+        {
+            original: "Я <span class='highlight-phrase'>обычно</span> пью чай по утрам.",
+            transformed: "Я всегда пью чай по утрам.",
+            ans: "всегда"
+        },
+        {
+            original: "Мы решили расстаться <span class='highlight-phrase'>до конца жизни</span>.",
+            transformed: "Мы решили расстаться навсегда.",
+            ans: "навсегда"
+        },
+        {
+            original: "Он <span class='highlight-phrase'>часто</span> опаздывает на работу.",
+            transformed: "Он всегда опаздывает на работу.",
+            ans: "всегда"
+        },
+        {
+            original: "Я уеду из этого города <span class='highlight-phrase'>и больше не вернусь</span>.",
+            transformed: "Я уеду из этого города навсегда.",
+            ans: "навсегда"
+        },
+        {
+            original: "Она <span class='highlight-phrase'>постоянно</span> говорит о политике.",
+            transformed: "Она всегда говорит о политике.",
+            ans: "всегда"
+        },
+        {
+            original: "Я хочу запомнить этот миг <span class='highlight-phrase'>на всю жизнь</span>.",
+            transformed: "Я хочу запомнить этот миг навсегда.",
+            ans: "навсегда"
+        },
+        {
+            original: "<span class='highlight-phrase'>Каждый раз</span>, когда я вижу её, я улыбаюсь.",
+            transformed: "Я всегда улыбаюсь, когда вижу её.",
+            ans: "всегда"
+        },
+        {
+            original: "Олег бросил курить <span class='highlight-phrase'>окончательно</span>.",
+            transformed: "Олег бросил курить навсегда.",
+            ans: "навсегда"
+        },
+        {
+            original: "Мои друзья <span class='highlight-phrase'>в любой ситуации</span> помогают мне.",
+            transformed: "Мои друзья всегда помогают мне.",
+            ans: "всегда"
+        },
+        {
+            original: "Этот старый телефон сломался <span class='highlight-phrase'>насовсем</span>.",
+            transformed: "Этот старый телефон сломался навсегда.",
+            ans: "навсегда"
+        },
+        {
+            original: "Солнце <span class='highlight-phrase'>регулярно</span> встаёт на востоке.",
+            transformed: "Солнце всегда встаёт на востоке.",
+            ans: "всегда"
+        },
+        {
+            original: "Мы попрощались с ними <span class='highlight-phrase'>навечно</span>.",
+            transformed: "Мы попрощались с ними навсегда.",
+            ans: "навсегда"
+        }
+    ];
+
+    function shuffle(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    function initGame() {
+        const container = document.getElementById('task-container');
+        container.innerHTML = '';
+        
+        const shuffledTasks = shuffle([...tasks]);
+
+        shuffledTasks.forEach((task, idx) => {
+            const card = document.createElement('div');
+            card.className = 'transformation-card';
+            card.dataset.ans = task.ans;
+            card.dataset.transformedText = task.transformed;
+
+            // Buttons mischen
+            const buttons = shuffle(["всегда", "навсегда"]);
+
+            card.innerHTML = `
+                <span class="original-sentence">${task.original}</span>
+                <div class="option-group">
+                    <button class="choice-btn" onclick="checkChoice(this, '${buttons[0]}')">${buttons[0]}</button>
+                    <button class="choice-btn" onclick="checkChoice(this, '${buttons[1]}')">${buttons[1]}</button>
+                </div>
+                <div class="transformed-sentence">Neuer Satz: ${task.transformed}</div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function checkChoice(btn, choice) {
+        const card = btn.closest('.transformation-card');
+        const correct = card.dataset.ans;
+        const allBtns = card.querySelectorAll('.choice-btn');
+        const feedbackText = card.querySelector('.transformed-sentence');
+
+        allBtns.forEach(b => {
+            b.classList.remove('correct', 'incorrect');
+            if (b.innerText === correct) {
+                b.classList.add('correct');
+            } else if (b === btn) {
+                b.classList.add('incorrect');
+            }
+        });
+
+        if (choice === correct) {
+            feedbackText.style.display = 'block';
+        }
+    }
+
+    function revealAll() {
+        const cards = document.querySelectorAll('.transformation-card');
+        cards.forEach(card => {
+            const correct = card.dataset.ans;
+            const allBtns = card.querySelectorAll('.choice-btn');
+            const feedbackText = card.querySelector('.transformed-sentence');
+            
+            allBtns.forEach(b => {
+                b.classList.remove('incorrect');
+                if (b.innerText === correct) {
+                    b.classList.add('correct');
+                } else {
+                    b.classList.remove('correct');
+                }
+            });
+            feedbackText.style.display = 'block';
+        });
+    }
+
+    // Beim Start laden
+    window.onload = initGame;
+</script>
+
+</body>
+</html>
