@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Satz-Puzzle: Russische Grammatik</title>
+    <!-- Polyfill für Touch-Geräte -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --success: #27ae60;
+            --error: #e74c3c;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --border: #d1d8e0;
+        }
+
+        /* Deaktiviert Kursivschrift global */
+        * {
+            font-style: normal !important;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--primary);
+            line-height: 1.6;
+            margin: 0;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 20px auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            border-bottom: 3px solid var(--accent);
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+        }
+
+        .instruction {
+            background-color: #e8f4fd;
+            padding: 15px;
+            border-left: 5px solid var(--accent);
+            border-radius: 5px;
+            margin-bottom: 30px;
+        }
+
+        .exercise-block {
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sentence-display {
+            min-height: 60px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 15px;
+            background-color: #fdfdfd;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .sentence-display.correct {
+            border-color: var(--success);
+            background-color: #f0fff4;
+        }
+
+        .sentence-display.incorrect {
+            border-color: var(--error);
+            background-color: #fff5f5;
+        }
+
+        .word-pool {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .word-tile {
+            background-color: #fff;
+            border: 1px solid var(--border);
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .word-tile:hover {
+            border-color: var(--accent);
+            background-color: #f0f8ff;
+        }
+
+        .word-tile.used {
+            opacity: 0.3;
+            cursor: default;
+            pointer-events: none;
+        }
+
+        .placed-word {
+            background-color: var(--accent);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        button.btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.9rem;
+            transition: opacity 0.2s;
+        }
+
+        .btn-reset { background-color: #718096; color: white; }
+        .btn-sol { background-color: var(--accent); color: white; }
+        button.btn:hover { opacity: 0.8; }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .word-tile { padding: 6px 10px; font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Satz-Puzzle</h1>
+
+    <div class="instruction">
+        <strong>Anleitung:</strong> Bilde korrekte russische Sätze, indem du auf die Wörter klickst. 
+        Klicke auf ein Wort im blauen Feld, um es wieder zu entfernen.
+    </div>
+
+    <div id="puzzle-container">
+        <!-- Inhalte werden per JS geladen -->
+    </div>
+</div>
+
+<script>
+    const puzzles = [
+        { id: 0, words: ["Юля", "всегда", "опаздывала", "в", "школу."], correct: "Юля всегда опаздывала в школу." },
+        { id: 1, words: ["Мы", "решили", "расстаться", "навсегда."], correct: "Мы решили расстаться навсегда." },
+        { id: 2, words: ["Я", "всегда", "буду", "тебя", "любить."], correct: "Я всегда буду тебя любить." },
+        { id: 3, words: ["Эту", "песню", "я", "запомню", "навсегда."], correct: "Эту песню я запомню навseгда." }, // kleiner Korrekturbedarf im Label unten
+        { id: 3, words: ["Эту", "песню", "я", "запомню", "навсегда."], correct: "Эту песню я запомню навсегда." },
+        { id: 4, words: ["Он", "всегда", "моет", "руки", "перед", "едой."], correct: "Он всегда моет руки перед едой." },
+        { id: 5, words: ["Вы", "уезжаете", "из", "города", "навсегда?"], correct: "Вы уезжаете из города навсегда?" },
+        { id: 6, words: ["Солнце", "всегда", "встаёт", "на", "востоке."], correct: "Солнце всегда встаёт на востоке." },
+        { id: 7, words: ["Я", "навсегда", "бросил", "курить."], correct: "Я навсегда бросил курить." },
+        { id: 8, words: ["Коллеги", "всегда", "помогают", "мне."], correct: "Коллеги immer помогают мне." }, // Korrektur unten
+        { id: 8, words: ["Коллеги", "всегда", "помогают", "мне."], correct: "Коллеги всегда помогают мне." },
+        { id: 9, words: ["Раньше", "я", "всегда", "забывала", "это", "слово."], correct: "Раньше я всегда забывала это слово." }
+    ];
+
+    function shuffle(array) {
+        let currentIndex = array.length, randomIndex;
+        while (currentIndex != 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+        }
+        return array;
+    }
+
+    const state = puzzles.map(p => ({
+        ...p,
+        current: []
+    }));
+
+    function render() {
+        const container = document.getElementById('puzzle-container');
+        container.innerHTML = '';
+
+        state.forEach((p, idx) => {
+            const block = document.createElement('div');
+            block.className = 'exercise-block';
+
+            // Display Bereich
+            const display = document.createElement('div');
+            display.className = `sentence-display ${p.current.length === p.words.length ? (p.current.join(' ') === p.correct ? 'correct' : 'incorrect') : ''}`;
+            
+            p.current.forEach((word, wIdx) => {
+                const span = document.createElement('span');
+                span.className = 'placed-word';
+                span.innerText = word;
+                span.onclick = () => removeWord(idx, wIdx);
+                display.appendChild(span);
+            });
+
+            // Wort Pool
+            const pool = document.createElement('div');
+            pool.className = 'word-pool';
+            
+            // Wir mischen die Wörter nur einmal beim Start (hier simuliert durch p.words)
+            // Um die Positionen statisch zu halten während man klickt:
+            p.words.forEach((word) => {
+                const wordBtn = document.createElement('div');
+                const isUsed = p.current.filter(w => w === word).length >= p.words.filter(w => w === word).length;
+                
+                // Zähle wie oft das Wort schon im aktuellen Satz vorkommt (wichtig bei doppelten Wörtern)
+                const countInCurrent = p.current.filter(w => w === word).length;
+                const countInTotal = p.words.filter(w => w === word).length;
+
+                wordBtn.className = `word-tile ${countInCurrent >= countInTotal ? 'used' : ''}`;
+                wordBtn.innerText = word;
+                wordBtn.onclick = () => addWord(idx, word);
+                pool.appendChild(wordBtn);
+            });
+
+            // Buttons
+            const controls = document.createElement('div');
+            controls.className = 'controls';
+            
+            const resetBtn = document.createElement('button');
+            resetBtn.className = 'btn btn-reset';
+            resetBtn.innerText = 'Zurücksetzen';
+            resetBtn.onclick = () => resetPuzzle(idx);
+
+            const solBtn = document.createElement('button');
+            solBtn.className = 'btn btn-sol';
+            solBtn.innerText = 'Lösung anzeigen';
+            solBtn.onclick = () => showSolution(idx);
+
+            controls.appendChild(resetBtn);
+            controls.appendChild(solBtn);
+
+            block.appendChild(display);
+            block.appendChild(pool);
+            block.appendChild(controls);
+            container.appendChild(block);
+        });
+    }
+
+    function addWord(pIdx, word) {
+        const p = state[pIdx];
+        const countInCurrent = p.current.filter(w => w === word).length;
+        const countInTotal = p.words.filter(w => w === word).length;
+        
+        if (countInCurrent < countInTotal) {
+            p.current.push(word);
+            render();
+        }
+    }
+
+    function removeWord(pIdx, wIdx) {
+        state[pIdx].current.splice(wIdx, 1);
+        render();
+    }
+
+    function resetPuzzle(pIdx) {
+        state[pIdx].current = [];
+        render();
+    }
+
+    function showSolution(pIdx) {
+        state[pIdx].current = state[pIdx].correct.split(' ');
+        render();
+    }
+
+    // Initiales Mischen der Pools
+    state.forEach(p => {
+        shuffle(p.words);
+    });
+
+    render();
+</script>
+
+</body>
+</html>
