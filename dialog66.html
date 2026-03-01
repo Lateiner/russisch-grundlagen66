@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat-Training: Russische Adverben</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --success: #27ae60;
+            --error: #e74c3c;
+            --bg: #f0f2f5;
+            --chat-bg: #e5ddd5;
+            --msg-left: #ffffff;
+            --msg-right: #dcf8c6;
+            --text: #303030;
+        }
+
+        /* Deaktiviert Kursivschrift global */
+        * {
+            font-style: normal !important;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 20px auto;
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            border-bottom: 3px solid var(--accent);
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+        }
+
+        .instruction {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-left: 5px solid var(--accent);
+            border-radius: 5px;
+            margin-bottom: 30px;
+        }
+
+        .chat-window {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            background-color: var(--chat-bg);
+            padding: 20px;
+            border-radius: 12px;
+            min-height: 400px;
+            /* Subtiles Muster für Chat-Optik */
+            background-image: url("https://www.transparenttextures.com/patterns/cubes.png");
+        }
+
+        .dialogue-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 1rem;
+            line-height: 1.4;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .message.left {
+            align-self: flex-start;
+            background-color: var(--msg-left);
+            border-bottom-left-radius: 2px;
+        }
+
+        .message.right {
+            align-self: flex-end;
+            background-color: var(--msg-right);
+            border-bottom-right-radius: 2px;
+        }
+
+        .sender {
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: var(--accent);
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .option-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .option-btn {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #bbb;
+            background: #fff;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        /* Feedback Farben */
+        .option-btn.correct {
+            background-color: var(--success) !important;
+            color: white !important;
+            border-color: var(--success) !important;
+        }
+
+        .option-btn.incorrect {
+            background-color: var(--error) !important;
+            color: white !important;
+            border-color: var(--error) !important;
+        }
+
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: opacity 0.2s;
+        }
+
+        .btn-reset { background-color: #7f8c8d; color: white; }
+        .btn-sol { background-color: var(--accent); color: white; }
+        .btn:hover { opacity: 0.8; }
+
+        @media (max-width: 500px) {
+            .message { max-width: 95%; }
+            .option-group { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Chat-Simulation</h1>
+
+    <div class="instruction">
+        <strong>Anleitung:</strong> Vervollständige die Antworten im Chat. Wähle die logisch richtige Option. Bei Klick erhältst du sofort Feedback.
+    </div>
+
+    <div class="chat-window" id="chat-container">
+        <!-- Dialoge werden per JS geladen -->
+    </div>
+
+    <div class="controls">
+        <button class="btn btn-reset" onclick="initGame()">Zurücksetzen und mischen</button>
+        <button class="btn btn-sol" onclick="revealAll()">Lösungen anzeigen</button>
+    </div>
+</div>
+
+<script>
+    const dialogData = [
+        {
+            leftUser: "Анна",
+            leftMsg: "Ты скоро вернёшься домой?",
+            rightUser: "Иван",
+            rightMsg: "Нет, я уехал из города ____.",
+            ans: "навсегда"
+        },
+        {
+            leftUser: "Мама",
+            leftMsg: "Опять ты забыл ключи в машине!",
+            rightUser: "Сын",
+            rightMsg: "Прости, я ____ их там забываю.",
+            ans: "всегда"
+        },
+        {
+            leftUser: "Виктор",
+            leftMsg: "Ты запомнишь наш отпуск?",
+            rightUser: "Лена",
+            rightMsg: "Конечно! Я запомню его ____.",
+            ans: "навсегда"
+        },
+        {
+            leftUser: "Коллега",
+            leftMsg: "Ты всё ещё на работе?",
+            rightUser: "Максим",
+            rightMsg: "Да, по понедельникам я ____ работаю допоздна.",
+            ans: "всегда"
+        },
+        {
+            leftUser: "Друг",
+            leftMsg: "Вы помирились с Катей?",
+            rightUser: "Олег",
+            rightMsg: "Нет, мы расстались ____.",
+            ans: "навсегда"
+        },
+        {
+            leftUser: "Борис",
+            leftMsg: "Ты ешь мясо?",
+            rightUser: "Нина",
+            rightMsg: "Нет, я ____ заказываю только вегетарианские блюda.",
+            ans: "всегда"
+        },
+        {
+            leftUser: "Павел",
+            leftMsg: "Где твой старый телефон?",
+            rightUser: "Дима",
+            rightMsg: "Он сломался ____.",
+            ans: "навсегда"
+        },
+        {
+            leftUser: "Мария",
+            leftMsg: "Ты мне поможешь?",
+            rightUser: "Антон",
+            rightMsg: "Ты же знаешь, я ____ рад тебе помочь.",
+            ans: "всегда"
+        }
+    ];
+
+    function shuffle(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    function initGame() {
+        const container = document.getElementById('chat-container');
+        container.innerHTML = '';
+        
+        // Dialoge mischen
+        const shuffledDialogs = shuffle([...dialogData]);
+
+        shuffledDialogs.forEach((d, idx) => {
+            const group = document.createElement('div');
+            group.className = 'dialogue-group';
+            group.dataset.ans = d.ans;
+
+            // Buttons mischen
+            const btnOptions = shuffle(["всегда", "навсегда"]);
+
+            group.innerHTML = `
+                <div class="message left">
+                    <span class="sender">${d.leftUser}</span>
+                    ${d.leftMsg}
+                </div>
+                <div class="message right">
+                    <span class="sender">${d.rightUser}</span>
+                    ${d.rightMsg}
+                    <div class="option-group">
+                        <button class="option-btn" onclick="check(this, '${btnOptions[0]}')">${btnOptions[0]}</button>
+                        <button class="option-btn" onclick="check(this, '${btnOptions[1]}')">${btnOptions[1]}</button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(group);
+        });
+    }
+
+    function check(btn, choice) {
+        const group = btn.closest('.dialogue-group');
+        const correct = group.dataset.ans;
+        const buttons = group.querySelectorAll('.option-btn');
+
+        buttons.forEach(b => b.classList.remove('correct', 'incorrect'));
+
+        if (choice === correct) {
+            btn.classList.add('correct');
+        } else {
+            btn.classList.add('incorrect');
+            // Richtige Lösung markieren
+            buttons.forEach(b => {
+                if (b.innerText === correct) b.classList.add('correct');
+            });
+        }
+    }
+
+    function revealAll() {
+        const groups = document.querySelectorAll('.dialogue-group');
+        groups.forEach(group => {
+            const correct = group.dataset.ans;
+            const buttons = group.querySelectorAll('.option-btn');
+            buttons.forEach(b => {
+                b.classList.remove('incorrect');
+                if (b.innerText === correct) {
+                    b.classList.add('correct');
+                } else {
+                    b.classList.remove('correct');
+                }
+            });
+        });
+    }
+
+    // Start
+    window.onload = initGame;
+</script>
+
+</body>
+</html>
