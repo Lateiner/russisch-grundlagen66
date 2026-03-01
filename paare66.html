@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aspekt-Matching: Russische Grammatik</title>
+    <!-- Polyfill für Drag-and-Drop/Touch-Geräte -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --success: #27ae60;
+            --error: #e74c3c;
+            --bg: #f4f7f6;
+            --nsv: #d35400;
+            --sv: #8e44ad;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--primary);
+            line-height: 1.6;
+            margin: 0;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 20px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        h1 { text-align: center; border-bottom: 3px solid var(--accent); padding-bottom: 10px; }
+
+        .rule-box {
+            background-color: #fff9db;
+            border-left: 6px solid #f1c40f;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 4px;
+            font-size: 0.95rem;
+        }
+
+        .verb-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+
+        .verb-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 20px;
+            border: 2px solid #eaeeef;
+            border-radius: 12px;
+            background: #fff;
+            transition: all 0.3s;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .verb-info { display: flex; align-items: center; gap: 15px; min-width: 220px; }
+        .verb-name { font-size: 1.2rem; font-weight: bold; }
+
+        .badge {
+            font-size: 0.75rem;
+            font-weight: bold;
+            padding: 3px 10px;
+            border-radius: 20px;
+            color: white;
+        }
+        .badge-nsv { background-color: var(--nsv); }
+        .badge-sv { background-color: var(--sv); }
+
+        .btn-group { display: flex; gap: 10px; flex-grow: 1; justify-content: flex-end; }
+
+        .option-btn {
+            padding: 10px 15px;
+            border: 2px solid #ced4da;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            flex: 1;
+            max-width: 160px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        /* Feedback Status */
+        .option-btn.correct { background-color: var(--success) !important; border-color: var(--success) !important; color: white !important; }
+        .option-btn.incorrect { background-color: var(--error) !important; border-color: var(--error) !important; color: white !important; }
+
+        .controls {
+            margin-top: 35px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        button.main-action {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: opacity 0.2s;
+        }
+        .btn-reset { background-color: #6c757d; color: white; }
+        .btn-sol { background-color: var(--accent); color: white; }
+
+        @media (max-width: 600px) {
+            .verb-card { flex-direction: column; text-align: center; }
+            .verb-info { justify-content: center; width: 100%; }
+            .btn-group { width: 100%; }
+            .option-btn { max-width: none; }
+            .controls { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Aspekt-Matching</h1>
+
+    <div class="rule-box">
+        <strong>Grammatik-Logik:</strong><br>
+        • <strong>НСВ</strong> (unvollendet): Wiederholung oder Prozess. Beides möglich (всегда/навсегда).<br>
+        • <strong>СВ</strong> (vollendet): Einmaliges Resultat. <strong>Nur навсегда</strong> möglich.
+    </div>
+
+    <div class="verb-grid" id="game-grid"></div>
+
+    <div class="controls">
+        <button class="main-action btn-reset" onclick="initGame()">Mischen & Zurücksetzen</button>
+        <button class="main-action btn-sol" onclick="revealSolutions()">Lösungen anzeigen</button>
+    </div>
+</div>
+
+<script>
+    const verbsList = [
+        { word: "покупать", aspect: "НСВ", ans: "both" },
+        { word: "купить", aspect: "СВ", ans: "only-nav" },
+        { word: "уезжать", aspect: "НСВ", ans: "both" },
+        { word: "уехать", aspect: "СВ", ans: "only-nav" },
+        { word: "забывать", aspect: "НСВ", ans: "both" },
+        { word: "забыть", aspect: "СВ", ans: "only-nav" },
+        { word: "расставаться", aspect: "НСВ", ans: "both" },
+        { word: "расстаться", aspect: "СВ", ans: "only-nav" },
+        { word: "запоминать", aspect: "НСВ", ans: "both" },
+        { word: "запомнить", aspect: "СВ", ans: "only-nav" },
+        { word: "прощаться", aspect: "НСВ", ans: "both" },
+        { word: "попрощаться", aspect: "СВ", ans: "only-nav" },
+        { word: "помогать", aspect: "НСВ", ans: "both" },
+        { word: "помочь", aspect: "СВ", ans: "only-nav" },
+        { word: "опаздывать", aspect: "НСВ", ans: "both" },
+        { word: "опоздать", aspect: "СВ", ans: "only-nav" },
+        { word: "бросать", aspect: "НСВ", ans: "both" },
+        { word: "бросить", aspect: "СВ", ans: "only-nav" },
+        { word: "делать", aspect: "НСВ", ans: "both" },
+        { word: "сделать", aspect: "СВ", ans: "only-nav" }
+    ];
+
+    function shuffle(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    function initGame() {
+        const grid = document.getElementById('game-grid');
+        grid.innerHTML = '';
+        
+        // Verben mischen
+        const shuffledVerbs = shuffle([...verbsList]);
+
+        shuffledVerbs.forEach((v, idx) => {
+            const card = document.createElement('div');
+            card.className = 'verb-card';
+            // Wir speichern die korrekte Antwort direkt im Card-Element
+            card.dataset.correctAnswer = v.ans;
+
+            // Buttons mischen
+            const btnData = [
+                { t: "Nur навсегда", type: "only-nav" },
+                { t: "Beide möglich", type: "both" }
+            ];
+            shuffle(btnData);
+
+            card.innerHTML = `
+                <div class="verb-info">
+                    <span class="verb-name">${v.word}</span>
+                    <span class="badge ${v.aspect === 'НСВ' ? 'badge-nsv' : 'badge-sv'}">${v.aspect}</span>
+                </div>
+                <div class="btn-group">
+                    <button class="option-btn" data-type="${btnData[0].type}" onclick="checkClick(this)">${btnData[0].t}</button>
+                    <button class="option-btn" data-type="${btnData[1].type}" onclick="checkClick(this)">${btnData[1].t}</button>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function checkClick(clickedBtn) {
+        const card = clickedBtn.closest('.verb-card');
+        const correct = card.dataset.correctAnswer;
+        const allBtns = card.querySelectorAll('.option-btn');
+
+        allBtns.forEach(btn => {
+            btn.classList.remove('correct', 'incorrect');
+            if (btn.dataset.type === correct) {
+                btn.classList.add('correct');
+            } else if (btn === clickedBtn) {
+                // Wenn der falsche geklickt wurde
+                btn.classList.add('incorrect');
+            }
+        });
+    }
+
+    function revealSolutions() {
+        const cards = document.querySelectorAll('.verb-card');
+        cards.forEach(card => {
+            const correct = card.dataset.correctAnswer;
+            const allBtns = card.querySelectorAll('.option-btn');
+            
+            allBtns.forEach(btn => {
+                btn.classList.remove('incorrect'); // Rote Fehler entfernen
+                if (btn.dataset.type === correct) {
+                    btn.classList.add('correct'); // Nur die richtigen markieren
+                } else {
+                    btn.classList.remove('correct');
+                }
+            });
+        });
+    }
+
+    // Beim Start laden
+    window.onload = initGame;
+</script>
+
+</body>
+</html>
