@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kategorisierung: ВСЕГДА vs. НАВСЕГДА</title>
+    <!-- Polyfill für Drag-and-Drop auf Touch-Geräten -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --vsegda-color: #3498db;
+            --navsegda-color: #9b59b6;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.8rem;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        .intro {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-left: 5px solid var(--primary-color);
+            margin-bottom: 30px;
+            border-radius: 4px;
+            font-size: 0.95rem;
+        }
+
+        /* Drag-Items Pool */
+        .item-pool {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            background-color: #f0f0f0;
+            padding: 20px;
+            border-radius: 8px;
+            min-height: 100px;
+            margin-bottom: 30px;
+            border: 2px dashed #ccc;
+        }
+
+        .draggable {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: grab;
+            user-select: none;
+            font-size: 0.9rem;
+            transition: transform 0.2s, background-color 0.3s;
+            text-align: center;
+        }
+
+        .draggable:active {
+            cursor: grabbing;
+            transform: scale(1.05);
+        }
+
+        /* Drop Zones */
+        .drop-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .drop-zone {
+            min-height: 250px;
+            border: 3px dashed #bdc3c7;
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .drop-zone h3 {
+            margin-top: 0;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        #zone-vsegda { border-color: var(--vsegda-color); }
+        #zone-vsegda h3 { color: var(--vsegda-color); }
+        
+        #zone-navsegda { border-color: var(--navsegda-color); }
+        #zone-navsegda h3 { color: var(--navsegda-color); }
+
+        .drop-zone.drag-over {
+            background-color: rgba(0,0,0,0.05);
+            border-style: solid;
+        }
+
+        /* Feedback Colors */
+        .correct { background-color: var(--success-color) !important; }
+        .incorrect { background-color: var(--error-color) !important; }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: opacity 0.2s;
+        }
+
+        .btn-reset { background-color: #7f8c8d; color: white; }
+        .btn-solution { background-color: var(--primary-color); color: white; }
+        button:hover { opacity: 0.9; }
+
+        @media (max-width: 650px) {
+            .drop-container {
+                grid-template-columns: 1fr;
+            }
+            .drop-zone {
+                min-height: 180px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>ВСЕГДА vs. НАВСЕГДА</h1>
+    
+    <div class="intro">
+        <strong>Anleitung:</strong> Ziehe die russischen Ausdrücke und Konzepte in die richtige Spalte. <br>
+        • <strong>ВСЕГДА</strong> = Wiederholung, Gewohnheit, ständiger Prozess.<br>
+        • <strong>НАВСЕГДА</strong> = Endgültigkeit, Abschluss, Punkt ohne Rückkehr.
+    </div>
+
+    <div class="item-pool" id="item-pool" ondrop="drop(event)" ondragover="allowDrop(event)">
+        <!-- Items werden per JS geladen -->
+    </div>
+
+    <div class="drop-container">
+        <div class="drop-zone" id="v" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <h3>ВСЕГДА<br><small>(Wiederholung)</small></h3>
+        </div>
+        <div class="drop-zone" id="n" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <h3>НАВСЕГДА<br><small>(Endgültigkeit)</small></h3>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn-reset" onclick="resetAll()">Zurücksetzen</button>
+        <button class="btn-solution" onclick="showSolutions()">Lösungen anzeigen</button>
+    </div>
+</div>
+
+<script>
+    const itemsData = [
+        { id: "i1", text: "каждый день (jeden Tag)", cat: "v" },
+        { id: "i2", text: "уехать и не вернуться", cat: "n" },
+        { id: "i3", text: "обычно (gewöhnlich)", cat: "v" },
+        { id: "i4", text: "до конца жизни", cat: "n" },
+        { id: "i5", text: "часто (oft)", cat: "v" },
+        { id: "i6", text: "точка невозврата", cat: "n" },
+        { id: "i7", text: "постоянно (ständig)", cat: "v" },
+        { id: "i8", text: "бросить курить (endgültig)", cat: "n" },
+        { id: "i9", text: "каждый раз (jedes Mal)", cat: "v" },
+        { id: "i10", text: "расстаться (sich trennen)", cat: "n" },
+        { id: "i11", text: "по утрам (morgens)", cat: "v" },
+        { id: "i12", text: "закрыть тему", cat: "n" },
+        { id: "i13", text: "по понедельникам", cat: "v" },
+        { id: "i14", text: "запомнить этот момент", cat: "n" },
+        { id: "i15", text: "всегда помогает", cat: "v" },
+        { id: "i16", text: "покинуть город", cat: "n" }
+    ];
+
+    const pool = document.getElementById('item-pool');
+
+    // Initialisierung der Items
+    function initItems() {
+        // Zufällige Reihenfolge
+        const shuffled = itemsData.sort(() => Math.random() - 0.5);
+        shuffled.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'draggable';
+            div.id = item.id;
+            div.draggable = true;
+            div.innerText = item.text;
+            div.dataset.cat = item.cat;
+            div.addEventListener('dragstart', drag);
+            pool.appendChild(div);
+        });
+    }
+
+    function drag(ev) {
+        ev.dataTransfer.setData("text", ev.target.id);
+    }
+
+    function allowDrop(ev) {
+        ev.preventDefault();
+        if (ev.target.classList.contains('drop-zone')) {
+            ev.target.classList.add('drag-over');
+        }
+    }
+
+    // Entferne Highlight wenn Element Zone verlässt
+    document.addEventListener('dragleave', (ev) => {
+        if (ev.target.classList.contains('drop-zone')) {
+            ev.target.classList.remove('drag-over');
+        }
+    });
+
+    function drop(ev) {
+        ev.preventDefault();
+        const id = ev.dataTransfer.getData("text");
+        const el = document.getElementById(id);
+        let target = ev.target;
+
+        // Sicherstellen, dass wir in die Zone droppen, nicht auf ein anderes Item
+        if (!target.classList.contains('drop-zone') && !target.classList.contains('item-pool')) {
+            target = target.closest('.drop-zone') || target.closest('.item-pool');
+        }
+
+        if (target) {
+            target.classList.remove('drag-over');
+            target.appendChild(el);
+
+            // Sofortiges Feedback
+            if (target.id === "v" || target.id === "n") {
+                if (el.dataset.cat === target.id) {
+                    el.classList.add('correct');
+                    el.classList.remove('incorrect');
+                } else {
+                    el.classList.add('incorrect');
+                    el.classList.remove('correct');
+                }
+            } else {
+                // Zurück im Pool -> Farben entfernen
+                el.classList.remove('correct', 'incorrect');
+            }
+        }
+    }
+
+    function resetAll() {
+        const draggables = document.querySelectorAll('.draggable');
+        draggables.forEach(el => {
+            el.classList.remove('correct', 'incorrect');
+            pool.appendChild(el);
+        });
+        // Erneut mischen beim Reset
+        const items = Array.from(pool.children);
+        items.sort(() => Math.random() - 0.5).forEach(item => pool.appendChild(item));
+    }
+
+    function showSolutions() {
+        const draggables = document.querySelectorAll('.draggable');
+        draggables.forEach(el => {
+            const targetZone = document.getElementById(el.dataset.cat);
+            el.classList.remove('incorrect');
+            el.classList.add('correct');
+            targetZone.appendChild(el);
+        });
+    }
+
+    initItems();
+</script>
+
+</body>
+</html>
