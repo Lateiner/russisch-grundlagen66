@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Situations-Check: Russische Adverben</title>
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --success: #27ae60;
+            --error: #e74c3c;
+            --bg: #f4f7f6;
+            --card-bg: #ffffff;
+            --text: #34495e;
+            --border: #d1d8e0;
+        }
+
+        /* Verhindert Kursivschrift im gesamten Dokument */
+        * {
+            font-style: normal !important;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            border-bottom: 3px solid var(--accent);
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+        }
+
+        .instruction {
+            background-color: #e8f4fd;
+            padding: 15px;
+            border-left: 5px solid var(--accent);
+            border-radius: 5px;
+            margin-bottom: 30px;
+        }
+
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .situation-card {
+            border: 2px solid #edf2f7;
+            border-radius: 12px;
+            padding: 20px;
+            background-color: #fff;
+            transition: border-color 0.3s;
+        }
+
+        .context-label {
+            color: #718096;
+            font-size: 0.85rem;
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .situation-text {
+            font-weight: 500;
+            margin-bottom: 15px;
+            font-size: 1.05rem;
+        }
+
+        .russian-sentence {
+            margin-bottom: 15px;
+            color: var(--primary);
+            font-weight: bold;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+
+        .option-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .choice-btn {
+            flex: 1;
+            min-width: 140px;
+            padding: 12px;
+            border: 2px solid var(--border);
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .choice-btn:hover {
+            border-color: var(--accent);
+            background-color: #f7fafc;
+        }
+
+        /* Status-Farben */
+        .choice-btn.correct {
+            background-color: var(--success) !important;
+            border-color: var(--success) !important;
+            color: white !important;
+        }
+
+        .choice-btn.incorrect {
+            background-color: var(--error) !important;
+            border-color: var(--error) !important;
+            color: white !important;
+        }
+
+        .controls {
+            margin-top: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding-top: 20px;
+            border-top: 2px solid #edf2f7;
+        }
+
+        button.action-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: opacity 0.2s;
+        }
+
+        .btn-reset { background-color: #718096; color: white; }
+        .btn-sol { background-color: var(--accent); color: white; }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .option-group { flex-direction: column; }
+            .choice-btn { width: 100%; }
+            .controls { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Situations-Check</h1>
+
+    <div class="instruction">
+        <strong>Anleitung:</strong> Lies die Situation. Welches Wort passt logisch in den russischen Satz? Klicke auf die richtige Antwort.
+    </div>
+
+    <div id="game-content" class="task-list">
+        <!-- Dynamische Inhalte -->
+    </div>
+
+    <div class="controls">
+        <button class="action-btn btn-reset" onclick="initGame()">Mischen & Zurücksetzen</button>
+        <button class="action-btn btn-sol" onclick="revealAll()">Lösungen anzeigen</button>
+    </div>
+</div>
+
+<script>
+    const situations = [
+        {
+            context: "Iwan zieht in ein anderes Land und nimmt alle seine Sachen mit. Er geht...",
+            sentence: "Иван уезжает ...",
+            ans: "навсегда"
+        },
+        {
+            context: "Anna trinkt jeden Morgen nach dem Aufstehen eine Tasse Kaffee. Sie macht das...",
+            sentence: "Анна ... пьёт кофе по утрам.",
+            ans: "всегда"
+        },
+        {
+            context: "Ein Liebespaar verabschiedet sich am Bahnhof. Sie wissen, dass sie sich nie wieder sehen werden.",
+            sentence: "Они прощаются ...",
+            ans: "навсегда"
+        },
+        {
+            context: "Der Lehrer kommt zu jeder Unterrichtsstunde 5 Minuten zu spät.",
+            sentence: "Учитель ... опаздывает на уроки.",
+            ans: "всегда"
+        },
+        {
+            context: "Oleg hat beschlossen, nie wieder zu rauchen. Er hat aufgehört...",
+            sentence: "Олег бросил курить ...",
+            ans: "навсегда"
+        },
+        {
+            context: "Egal wann du anrufst, Maria hebt sofort ab. Sie hilft...",
+            sentence: "Мария ... помогает друзьям.",
+            ans: "всегда"
+        },
+        {
+            context: "Du hast einen Moment erlebt und willst ihn für den Rest deines Lebens im Gedächtnis behalten.",
+            sentence: "Я запомню этот момент ...",
+            ans: "навсегда"
+        },
+        {
+            context: "Maxim vergisst jedes Mal seinen Regenschirm, wenn es regnet.",
+            sentence: "Максим ... забывает зонт.",
+            ans: "всегда"
+        },
+        {
+            context: "Die Sonne geht jeden Tag im Osten auf. Das passiert...",
+            sentence: "Солнце ... встаёт на востоке.",
+            ans: "всегда"
+        },
+        {
+            context: "Ein Unternehmen schließt eine Filiale endgültig und verkauft das Gebäude.",
+            sentence: "Офис закрылся ...",
+            ans: "навсегда"
+        },
+        {
+            context: "Jedes Mal, wenn Viktor dieses Lied hört, muss er weinen.",
+            sentence: "Виктор ... плачет, когда слышит эту песню.",
+            ans: "всегда"
+        },
+        {
+            context: "Du löschst ein wichtiges Dokument und leerst den Papierkorb. Es ist weg...",
+            sentence: "Документ удалён ...",
+            ans: "навсегда"
+        }
+    ];
+
+    function shuffle(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    function initGame() {
+        const container = document.getElementById('game-content');
+        container.innerHTML = '';
+        
+        const shuffledSituations = shuffle([...situations]);
+
+        shuffledSituations.forEach((sit, idx) => {
+            const card = document.createElement('div');
+            card.className = 'situation-card';
+            card.dataset.correct = sit.ans;
+
+            const choices = shuffle(["всегда", "навсегда"]);
+
+            card.innerHTML = `
+                <span class="context-label">Situation:</span>
+                <div class="situation-text">${sit.context}</div>
+                <div class="russian-sentence">"${sit.sentence}"</div>
+                <div class="option-group">
+                    <button class="choice-btn" data-val="${choices[0]}" onclick="checkChoice(this)">${choices[0]}</button>
+                    <button class="choice-btn" data-val="${choices[1]}" onclick="checkChoice(this)">${choices[1]}</button>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function checkChoice(btn) {
+        const card = btn.closest('.situation-card');
+        const correct = card.dataset.correct;
+        const allBtns = card.querySelectorAll('.choice-btn');
+
+        allBtns.forEach(b => {
+            b.classList.remove('correct', 'incorrect');
+            if (b.dataset.val === correct) {
+                b.classList.add('correct');
+            } else if (b === btn) {
+                b.classList.add('incorrect');
+            }
+        });
+    }
+
+    function revealAll() {
+        const cards = document.querySelectorAll('.situation-card');
+        cards.forEach(card => {
+            const correct = card.dataset.correct;
+            const allBtns = card.querySelectorAll('.choice-btn');
+            allBtns.forEach(b => {
+                b.classList.remove('incorrect');
+                if (b.dataset.val === correct) {
+                    b.classList.add('correct');
+                } else {
+                    b.classList.remove('correct');
+                }
+            });
+        });
+    }
+
+    window.onload = initGame;
+</script>
+
+</body>
+</html>
