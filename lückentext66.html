@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Übung: ВСЕГДА oder НАВСЕГДА</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --border-color: #dcdde1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--accent-color);
+            padding-bottom: 10px;
+        }
+
+        .intro {
+            background-color: #eef6fb;
+            padding: 20px;
+            border-left: 5px solid var(--accent-color);
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+
+        .exercise-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        .sentence-card {
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: #fff;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        .sentence-number {
+            font-weight: bold;
+            margin-right: 10px;
+            min-width: 25px;
+        }
+
+        select {
+            margin: 0 8px;
+            padding: 6px 10px;
+            border-radius: 4px;
+            border: 2px solid var(--border-color);
+            font-size: 16px;
+            outline: none;
+            cursor: pointer;
+            background-color: white;
+            transition: all 0.3s;
+        }
+
+        /* Feedback Styles */
+        select.correct {
+            border-color: var(--success-color);
+            background-color: #eaffea;
+        }
+
+        select.incorrect {
+            border-color: var(--error-color);
+            background-color: #ffeaea;
+        }
+
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            position: sticky;
+            bottom: 20px;
+            background: rgba(244, 247, 246, 0.9);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            transition: transform 0.1s, opacity 0.2s;
+        }
+
+        .btn-reset {
+            background-color: #95a5a6;
+            color: white;
+        }
+
+        .btn-solution {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            .sentence-card {
+                font-size: 14px;
+            }
+            select {
+                margin: 5px 0;
+                width: 100%;
+            }
+            .controls {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>ВСЕГДА oder НАВСЕГДА?</h1>
+
+    <div class="intro">
+        <h3>Kurze Wiederholung</h3>
+        <p>
+            <strong>ВСЕГДА</strong> (immer): Für Handlungen, die sich wiederholen (Gewohnheiten, Fakten). Wird mit dem unvollendeten Aspekt (НСВ) genutzt.<br>
+            <strong>НАВСЕГДА</strong> (für immer): Für Handlungen, die endgültig sind oder einen Zustand ab einem bestimmten Zeitpunkt beschreiben.
+        </p>
+    </div>
+
+    <div class="exercise-grid" id="exercise-container">
+        <!-- Sätze werden per JavaScript eingefügt -->
+    </div>
+
+    <div class="controls">
+        <button class="btn-reset" onclick="resetExercises()">Alle zurücksetzen</button>
+        <button class="btn-solution" onclick="showAllSolutions()">Alle Lösungen anzeigen</button>
+    </div>
+</div>
+
+<script>
+    const exercises = [
+        { sentence: ["Юля", "опаздывала в школу."], answer: "всегда" },
+        { sentence: ["Мы решили расстаться", "."], answer: "навсегда" },
+        { sentence: ["Он", "моет руки перед едой."], answer: "всегда" },
+        { sentence: ["Эту встречу я запомню", "."], answer: "навсегда" },
+        { sentence: ["Вы уезжаете из города", "?"], answer: "навсегда" },
+        { sentence: ["Коллеги", "будут помогать мне."], answer: "всегда" },
+        { sentence: ["Раньше я", "забывал ключи."], answer: "всегда" },
+        { sentence: ["Я", "уезжаю из этой страны."], answer: "навсегда" },
+        { sentence: ["Солнце", "встаёт на востоке."], answer: "всегда" },
+        { sentence: ["Мы попрощались", "."], answer: "навсегда" },
+        { sentence: ["Ты", "хочешь работать в этой компании?"], answer: "всегда" },
+        { sentence: ["Она", "заказывает только зелёный чай."], answer: "всегда" },
+        { sentence: ["Я закрыл эту тему для себя", "."], answer: "навсегда" },
+        { sentence: ["Друзья", "приходят на помощь вовремя."], answer: "всегда" },
+        { sentence: ["Ты", "останешься в моей памяти."], answer: "навсегда" },
+        { sentence: ["В детстве мы", "играли в этом парке."], answer: "всегда" },
+        { sentence: ["Этот день", "изменил мою жизнь."], answer: "навсегда" },
+        { sentence: ["Вы", "говорите правду?"], answer: "всегда" },
+        { sentence: ["Я", "бросил курить."], answer: "навсегда" },
+        { sentence: ["Раньше я не понимал это правило, но теперь я запомню его", "."], answer: "навсегда" }
+    ];
+
+    const container = document.getElementById('exercise-container');
+
+    // Erstelle die Aufgaben
+    exercises.forEach((ex, index) => {
+        const card = document.createElement('div');
+        card.className = 'sentence-card';
+        
+        card.innerHTML = `
+            <span class="sentence-number">${index + 1}.</span>
+            ${ex.sentence[0]}
+            <select onchange="checkAnswer(this, '${ex.answer}')">
+                <option value="">---</option>
+                <option value="всегда">всегда</option>
+                <option value="навсегда">навсегда</option>
+            </select>
+            ${ex.sentence[1]}
+        `;
+        container.appendChild(card);
+    });
+
+    // Funktion zur sofortigen Überprüfung
+    function checkAnswer(selectElement, correctAnswer) {
+        const value = selectElement.value;
+        selectElement.classList.remove('correct', 'incorrect');
+        
+        if (value === "") {
+            return;
+        }
+
+        if (value === correctAnswer) {
+            selectElement.classList.add('correct');
+        } else {
+            selectElement.classList.add('incorrect');
+        }
+    }
+
+    // Alles zurücksetzen
+    function resetExercises() {
+        const selects = document.querySelectorAll('select');
+        selects.forEach(sel => {
+            sel.value = "";
+            sel.classList.remove('correct', 'incorrect');
+        });
+    }
+
+    // Lösungen anzeigen
+    function showAllSolutions() {
+        const selects = document.querySelectorAll('select');
+        exercises.forEach((ex, index) => {
+            selects[index].value = ex.answer;
+            selects[index].classList.remove('incorrect');
+            selects[index].classList.add('correct');
+        });
+    }
+</script>
+
+</body>
+</html>
