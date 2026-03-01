@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Russisch-Assistent: ВСЕГДА vs. НАВСЕГДА</title>
+    <!-- Polyfill für Drag-and-Drop auf Touch-Geräten -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --border-val: #ced4da;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        h1, h2, h3 {
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 8px;
+        }
+
+        .explanation {
+            background-color: #e3f2fd;
+            padding: 20px;
+            border-left: 6px solid var(--accent-color);
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+
+        .exercise-card {
+            border: 1px solid var(--border-val);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .button-group {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .btn-reset { background-color: #6c757d; color: white; }
+        .btn-solution { background-color: var(--accent-color); color: white; }
+        button:hover { opacity: 0.85; }
+
+        /* Direkte Feedback-Styles */
+        select {
+            padding: 6px;
+            border-radius: 4px;
+            border: 2px solid var(--border-val);
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .correct-val { border-color: var(--success-color) !important; background-color: #eaffea; }
+        .incorrect-val { border-color: var(--error-color) !important; background-color: #ffeaea; }
+
+        .radio-option {
+            padding: 8px;
+            border-radius: 5px;
+            margin: 5px 0;
+            display: block;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .radio-option.correct-choice { background-color: #eaffea; border-color: var(--success-color); }
+        .radio-option.incorrect-choice { background-color: #ffeaea; border-color: var(--error-color); }
+
+        /* Drag and Drop */
+        .drag-container {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .drop-zone {
+            flex: 1;
+            min-height: 120px;
+            border: 2px dashed var(--border-val);
+            border-radius: 10px;
+            padding: 10px;
+            background: #fdfdfd;
+        }
+
+        .draggable {
+            background: var(--primary-color);
+            color: white;
+            padding: 8px 12px;
+            margin: 5px;
+            border-radius: 6px;
+            cursor: grab;
+            display: inline-block;
+            font-size: 14px;
+        }
+
+        .draggable.in-place-correct { background-color: var(--success-color); }
+        .draggable.in-place-incorrect { background-color: var(--error-color); }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .drag-container { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russische Grammatik: ВСЕГДА vs. НАВСЕГДА</h1>
+    
+    <div class="explanation">
+        <h3>Kurzerklärung</h3>
+        <p><strong>ВСЕГДА</strong> (Immer): Wiederholte Handlungen oder dauerhafte Zustände. Nur mit dem unvollendeten Aspekt (НСВ).<br>
+           <em>Beispiel: „Она всегда заказывает чай.“</em></p>
+        <p><strong>НАВСЕГДА</strong> (Für immer): Einmalige Handlung mit endgültigem Ergebnis ab einem Zeitpunkt. Mit unvollendetem (НСВ) oder vollendetem Aspekt (СВ) möglich.<br>
+           <em>Beispiel: „Я прощаюсь с тобой навсегда.“</em></p>
+    </div>
+
+    <!-- Teil 1: Dropdowns -->
+    <h2>Teil 1: Sätze ergänzen</h2>
+    
+    <div id="exercises-part-1">
+        <!-- Task 1-5 -->
+        <div class="exercise-card" id="t1">
+            <p>1. Мы решили расстаться <select onchange="instantCheckSelect(this, 'навсегда')"><option value="">---</option><option value="всегда">всегда</option><option value="навсегда">навсегда</option></select>.</p>
+            <div class="button-group">
+                <button class="btn-reset" onclick="resetSelect('t1')">Zurücksetzen</button>
+                <button class="btn-solution" onclick="solveSelect('t1', 'навсегда')">Lösung anzeigen</button>
+            </div>
+        </div>
+
+        <div class="exercise-card" id="t2">
+            <p>2. Он <select onchange="instantCheckSelect(this, 'всегда')"><option value="">---</option><option value="всегда">всегда</option><option value="навсегда">навсегда</option></select> моет руки перед едой.</p>
+            <div class="button-group">
+                <button class="btn-reset" onclick="resetSelect('t2')">Zurücksetzen</button>
+                <button class="btn-solution" onclick="solveSelect('t2', 'всегда')">Lösung anzeigen</button>
+            </div>
+        </div>
+
+        <div class="exercise-card" id="t3">
+            <p>3. Вы уезжаете из страны <select onchange="instantCheckSelect(this, 'навсегда')"><option value="">---</option><option value="всегда">всегда</option><option value="навсегда">навсегда</option></select>?</p>
+            <div class="button-group">
+                <button class="btn-reset" onclick="resetSelect('t3')">Zurücksetzen</button>
+                <button class="btn-solution" onclick="solveSelect('t3', 'навсегда')">Lösung anzeigen</button>
+            </div>
+        </div>
+
+        <div class="exercise-card" id="t4">
+            <p>4. Раньше папа <select onchange="instantCheckSelect(this, 'всегда')"><option value="">---</option><option value="всегда">всегда</option><option value="навсегда">навсегда</option></select> читал мне сказки.</p>
+            <div class="button-group">
+                <button class="btn-reset" onclick="resetSelect('t4')">Zurücksetzen</button>
+                <button class="btn-solution" onclick="solveSelect('t4', 'всегда')">Lösung anzeigen</button>
+            </div>
+        </div>
+
+        <div class="exercise-card" id="t5">
+            <p>5. Эту встречу я запомню <select onchange="instantCheckSelect(this, 'навсегда')"><option value="">---</option><option value="всегда">всегда</option><option value="навсегда">навсегда</option></select>.</p>
+            <div class="button-group">
+                <button class="btn-reset" onclick="resetSelect('t5')">Zurücksetzen</button>
+                <button class="btn-solution" onclick="solveSelect('t5', 'навсегда')">Lösung anzeigen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Teil 2: Theorie (Radios) -->
+    <h2>Teil 2: Grammatik-Check</h2>
+
+    <div class="exercise-card" id="t6">
+        <p>6. Welches Wort passt zum Verb „забыл“ (vollendet, Ergebnis zählt)?</p>
+        <label class="radio-option"><input type="radio" name="r6" value="всегда" onclick="instantRadio(this, 'навсегда')"> всегда</label>
+        <label class="radio-option"><input type="radio" name="r6" value="навсегда" onclick="instantRadio(this, 'навсегда')"> навсегда</label>
+        <div class="button-group">
+            <button class="btn-reset" onclick="resetRadio('t6')">Zurücksetzen</button>
+            <button class="btn-solution" onclick="solveRadio('t6', 'навсегда')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <div class="exercise-card" id="t7">
+        <p>7. „Всегда“ signalisiert meistens:</p>
+        <label class="radio-option"><input type="radio" name="r7" value="A" onclick="instantRadio(this, 'A')"> Eine Gewohnheit/Wiederholung</label>
+        <label class="radio-option"><input type="radio" name="r7" value="B" onclick="instantRadio(this, 'A')"> Eine einmalige, endgültige Aktion</label>
+        <div class="button-group">
+            <button class="btn-reset" onclick="resetRadio('t7')">Zurücksetzen</button>
+            <button class="btn-solution" onclick="solveRadio('t7', 'A')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <div class="exercise-card" id="t8">
+        <p>8. Welcher Satz ist grammatikalisch korrekt?</p>
+        <label class="radio-option"><input type="radio" name="r8" value="A" onclick="instantRadio(this, 'B')"> Я всегда полюбил эту музыку.</label>
+        <label class="radio-option"><input type="radio" name="r8" value="B" onclick="instantRadio(this, 'B')"> Я навсегда полюбил эту музыку.</label>
+        <div class="button-group">
+            <button class="btn-reset" onclick="resetRadio('t8')">Zurücksetzen</button>
+            <button class="btn-solution" onclick="solveRadio('t8', 'B')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Teil 3: Drag & Drop (Übungen 9-14) -->
+    <h2>Teil 3: Kategorisieren</h2>
+    <p>Ordnen Sie die Begriffe zu. Richtig platzierte Elemente werden grün.</p>
+    <div class="exercise-card">
+        <div id="origin-zone" style="margin-bottom: 20px;">
+            <div class="draggable" draggable="true" id="d9" data-ans="v">каждый раз</div>
+            <div class="draggable" draggable="true" id="d10" data-ans="n">конец действия</div>
+            <div class="draggable" draggable="true" id="d11" data-ans="v">обычно</div>
+            <div class="draggable" draggable="true" id="d12" data-ans="n">без возврата</div>
+            <div class="draggable" draggable="true" id="d13" data-ans="v">часто</div>
+            <div class="draggable" draggable="true" id="d14" data-ans="n">точка отсчёта</div>
+        </div>
+        <div class="drag-container">
+            <div class="drop-zone" id="v-zone" ondrop="drop(event, 'v')" ondragover="allowDrop(event)">
+                <strong>ВСЕГДА</strong>
+            </div>
+            <div class="drop-zone" id="n-zone" ondrop="drop(event, 'n')" ondragover="allowDrop(event)">
+                <strong>НАВСЕГДА</strong>
+            </div>
+        </div>
+        <div class="button-group">
+            <button class="btn-reset" onclick="resetDrag()">Zurücksetzen</button>
+            <button class="btn-solution" onclick="solveDrag()">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <!-- Teil 4: Gemischte Sätze (Übungen 15-20) -->
+    <h2>Teil 4: Kontextuelle Übungen</h2>
+
+    <div class="exercise-card" id="t15">
+        <p>15. „Раньше я <select onchange="instantCheckSelect(this, 'всегда')"><option value="">---</option><option value="всегда">всегда</option><option value="навсегда">навсегда</option></select> брал зонт, но вчера потерял его <select onchange="instantCheckSelect(this, 'навсегда')"><option value="">---</option><option value="всегда">всегда</option><option value="навсегда">навсегда</option></select>.“</p>
+        <div class="button-group">
+            <button class="btn-reset" onclick="resetSelect('t15')">Zurücksetzen</button>
+            <button class="btn-solution" onclick="solveTask15()">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <div class="exercise-card" id="t16">
+        <p>16. Друзья <select onchange="instantCheckSelect(this, 'всегда')"><option value="">---</option><option value="всегда">всегда</option><option value="навсегда">навсегда</option></select> приходят на помощь.</p>
+        <div class="button-group">
+            <button class="btn-reset" onclick="resetSelect('t16')">Zurücksetzen</button>
+            <button class="btn-solution" onclick="solveSelect('t16', 'всегда')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <div class="exercise-card" id="t17">
+        <p>17. Он выключил телефон <select onchange="instantCheckSelect(this, 'навсегда')"><option value="">---</option><option value="всегда">всегда</option><option value="навсегда">навсегда</option></select>.</p>
+        <div class="button-group">
+            <button class="btn-reset" onclick="resetSelect('t17')">Zurücksetzen</button>
+            <button class="btn-solution" onclick="solveSelect('t17', 'навсегда')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <div class="exercise-card" id="t18">
+        <p>18. Мы <select onchange="instantCheckSelect(this, 'всегда')"><option value="">---</option><option value="всегда">всегда</option><option value="навсегда">навсегда</option></select> празднуем Рождество вместе.</p>
+        <div class="button-group">
+            <button class="btn-reset" onclick="resetSelect('t18')">Zurücksetzen</button>
+            <button class="btn-solution" onclick="solveSelect('t18', 'всегда')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <div class="exercise-card" id="t19">
+        <p>19. Это слово останется в памяти <select onchange="instantCheckSelect(this, 'навсегда')"><option value="">---</option><option value="всегда">всегда</option><option value="навсегда">навсегда</option></select>.</p>
+        <div class="button-group">
+            <button class="btn-reset" onclick="resetSelect('t19')">Zurücksetzen</button>
+            <button class="btn-solution" onclick="solveSelect('t19', 'навсегда')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+    <div class="exercise-card" id="t20">
+        <p>20. Вы <select onchange="instantCheckSelect(this, 'всегда')"><option value="">---</option><option value="всегда">всегда</option><option value="навсегда">навсегда</option></select> говорите правду?</p>
+        <div class="button-group">
+            <button class="btn-reset" onclick="resetSelect('t20')">Zurücksetzen</button>
+            <button class="btn-solution" onclick="solveSelect('t20', 'всегда')">Lösung anzeigen</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // --- Logik für Dropdowns ---
+    function instantCheckSelect(el, correct) {
+        if (el.value === "") {
+            el.className = "";
+        } else if (el.value === correct) {
+            el.className = "correct-val";
+        } else {
+            el.className = "incorrect-val";
+        }
+    }
+
+    function resetSelect(id) {
+        const selects = document.getElementById(id).querySelectorAll('select');
+        selects.forEach(s => { s.value = ""; s.className = ""; });
+    }
+
+    function solveSelect(id, correct) {
+        const select = document.getElementById(id).querySelector('select');
+        select.value = correct;
+        select.className = "correct-val";
+    }
+
+    function solveTask15() {
+        const selects = document.getElementById('t15').querySelectorAll('select');
+        selects[0].value = "всегда"; selects[0].className = "correct-val";
+        selects[1].value = "навсегда"; selects[1].className = "correct-val";
+    }
+
+    // --- Logik für Radio Buttons ---
+    function instantRadio(el, correct) {
+        const parent = el.closest('.exercise-card');
+        const labels = parent.querySelectorAll('.radio-option');
+        labels.forEach(l => l.className = "radio-option"); // reset colors
+
+        if (el.value === correct) {
+            el.parentElement.className = "radio-option correct-choice";
+        } else {
+            el.parentElement.className = "radio-option incorrect-choice";
+        }
+    }
+
+    function resetRadio(id) {
+        const parent = document.getElementById(id);
+        const inputs = parent.querySelectorAll('input');
+        const labels = parent.querySelectorAll('.radio-option');
+        inputs.forEach(i => i.checked = false);
+        labels.forEach(l => l.className = "radio-option");
+    }
+
+    function solveRadio(id, correct) {
+        const parent = document.getElementById(id);
+        const inputs = parent.querySelectorAll('input');
+        inputs.forEach(i => {
+            if (i.value === correct) {
+                i.checked = true;
+                i.parentElement.className = "radio-option correct-choice";
+            } else {
+                i.parentElement.className = "radio-option";
+            }
+        });
+    }
+
+    // --- Drag & Drop Logik ---
+    function allowDrop(ev) { ev.preventDefault(); }
+
+    document.querySelectorAll('.draggable').forEach(d => {
+        d.addEventListener('dragstart', ev => {
+            ev.dataTransfer.setData("text", ev.target.id);
+        });
+    });
+
+    function drop(ev, zoneType) {
+        ev.preventDefault();
+        const data = ev.dataTransfer.getData("text");
+        const el = document.getElementById(data);
+        const targetZone = ev.target.closest('.drop-zone');
+        
+        targetZone.appendChild(el);
+        
+        // Sofort-Feedback
+        if (el.getAttribute('data-ans') === zoneType) {
+            el.className = "draggable in-place-correct";
+        } else {
+            el.className = "draggable in-place-incorrect";
+        }
+    }
+
+    function resetDrag() {
+        const origin = document.getElementById('origin-zone');
+        document.querySelectorAll('.draggable').forEach(el => {
+            el.className = "draggable";
+            origin.appendChild(el);
+        });
+    }
+
+    function solveDrag() {
+        const vZone = document.getElementById('v-zone');
+        const nZone = document.getElementById('n-zone');
+        document.querySelectorAll('.draggable').forEach(el => {
+            if (el.getAttribute('data-ans') === 'v') {
+                vZone.appendChild(el);
+                el.className = "draggable in-place-correct";
+            } else {
+                nZone.appendChild(el);
+                el.className = "draggable in-place-correct";
+            }
+        });
+    }
+</script>
+
+</body>
+</html>
