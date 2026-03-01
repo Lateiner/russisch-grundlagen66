@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fehler-Detektiv: Russische Adverben</title>
+    <!-- Polyfill für Touch-Geräte -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #3498db;
+            --success: #27ae60;
+            --error: #e74c3c;
+            --bg: #f4f7f9;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--primary);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--white);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            border-bottom: 3px solid var(--accent);
+            padding-bottom: 10px;
+        }
+
+        .intro {
+            background-color: #eaf4fb;
+            padding: 15px;
+            border-left: 5px solid var(--accent);
+            margin-bottom: 30px;
+            border-radius: 5px;
+        }
+
+        .instruction {
+            font-weight: bold;
+            margin-bottom: 20px;
+            display: block;
+            text-align: center;
+        }
+
+        .exercise-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .sentence-item {
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            transition: background 0.3s;
+        }
+
+        .sentence-item.is-correct { background-color: #f1f9f1; border-color: var(--success); }
+        .sentence-item.is-incorrect { background-color: #fdf2f2; border-color: var(--error); }
+
+        .num { font-weight: bold; margin-right: 10px; width: 25px; }
+
+        select {
+            padding: 5px 10px;
+            margin: 0 10px;
+            font-size: 16px;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        select.correct { border-color: var(--success); background-color: #eaffea; }
+        select.incorrect { border-color: var(--error); background-color: #ffeaea; }
+
+        .controls {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding-bottom: 20px;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-reset { background-color: #95a5a6; color: white; }
+        .btn-sol { background-color: var(--accent); color: white; }
+        button:hover { opacity: 0.8; }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .sentence-item { font-size: 14px; }
+            select { width: 100%; margin: 10px 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Fehler-Detektiv: ВСЕГДА vs. НАВСЕГДА</h1>
+
+    <div class="intro">
+        <p><strong>Die Regel:</strong><br>
+        • <strong>ВСЕГДА</strong> (immer): Wiederholung, Gewohnheit, ständiger Prozess.<br>
+        • <strong>НАВСЕГДА</strong> (für immer): Abschluss, Endgültigkeit, Punkt ohne Rückkehr.</p>
+    </div>
+
+    <span class="instruction">In den folgenden Sätzen ist das Adverb falsch. Wähle die richtige Korrektur aus:</span>
+
+    <div class="exercise-list" id="exercise-list">
+        <!-- Dynamisch generiert -->
+    </div>
+
+    <div class="controls">
+        <button class="btn-reset" onclick="resetAll()">Zurücksetzen</button>
+        <button class="btn-sol" onclick="showAll()">Alle Lösungen anzeigen</button>
+    </div>
+</div>
+
+<script>
+    const data = [
+        { s1: "Я", s2: "пью кофе по утрам.", ans: "всегда" },
+        { s1: "Мы решили расстаться", s2: ".", ans: "навсегда" },
+        { s1: "Юля", s2: "опаздывала на уроки в школе.", ans: "всегда" },
+        { s1: "Он покинул Россию", s2: ".", ans: "навсегда" },
+        { s1: "Коллеги", s2: "будут помогаer mir helfen.", ans: "всегда" },
+        { s1: "Я запомню этот день", s2: ".", ans: "наvsegda" }, // Hier war ein Tippfehler im Kopf, korrigiere auf Russisch:
+        { s1: "Я запомню этот день", s2: ".", ans: "навсегда" },
+        { s1: "Раньше я", s2: "забывала это слово.", ans: "всегда" },
+        { s1: "Я", s2: "запомню это правило.", ans: "навсегда" },
+        { s1: "Солнце", s2: "встаёт на востоке.", ans: "всегда" },
+        { s1: "Ты", s2: "хочешь здесь работать?", ans: "всегда" },
+        { s1: "Они попрощались", s2: ".", ans: "навсегда" },
+        { s1: "Мама", s2: "говорит правду.", ans: "всегда" },
+        { s1: "Этот фильм останется в моей памяти", s2: ".", ans: "навсегда" },
+        { s1: "Друзья", s2: "приходят вовремя.", ans: "всегда" },
+        { s1: "Вы уезжаете", s2: "из этого города?", ans: "навсегда" },
+        { s1: "Я", s2: "буду любить тебя.", ans: "всегда" },
+        { s1: "Он бросил курить", s2: ".", ans: "навсегда" },
+        { s1: "Обычно я", s2: "заказываю чай.", ans: "всегда" },
+        { s1: "Я хочу уехать", s2: ".", ans: "навсегда" },
+        { s1: "Ты", s2: "опаздываешь!", ans: "всегда" }
+    ];
+
+    const list = document.getElementById('exercise-list');
+
+    function init() {
+        list.innerHTML = '';
+        data.forEach((item, i) => {
+            const div = document.createElement('div');
+            div.className = 'sentence-item';
+            div.id = `item-${i}`;
+            
+            // Falsches Wort für die Anzeige wählen (das Gegenteil der Antwort)
+            const wrongWord = item.ans === "всегда" ? "навсегда" : "всегда";
+
+            div.innerHTML = `
+                <span class="num">${i + 1}.</span>
+                <span>${item.s1}</span>
+                <select id="sel-${i}" onchange="check(${i})">
+                    <option value="">-- Korrektur? --</option>
+                    <option value="всегда">всегда</option>
+                    <option value="навсегда">навсегда</option>
+                </select>
+                <span>${item.s2}</span>
+            `;
+            list.appendChild(div);
+        });
+    }
+
+    function check(i) {
+        const sel = document.getElementById(`sel-${i}`);
+        const item = document.getElementById(`item-${i}`);
+        const val = sel.value;
+
+        sel.classList.remove('correct', 'incorrect');
+        item.classList.remove('is-correct', 'is-incorrect');
+
+        if (val === "") return;
+
+        if (val === data[i].ans) {
+            sel.classList.add('correct');
+            item.classList.add('is-correct');
+        } else {
+            sel.classList.add('incorrect');
+            item.classList.add('is-incorrect');
+        }
+    }
+
+    function resetAll() {
+        init();
+    }
+
+    function showAll() {
+        data.forEach((item, i) => {
+            const sel = document.getElementById(`sel-${i}`);
+            sel.value = item.ans;
+            check(i);
+        });
+    }
+
+    init();
+</script>
+
+</body>
+</html>
